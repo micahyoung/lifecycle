@@ -1,6 +1,7 @@
 package acceptance
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
 
@@ -29,6 +29,7 @@ var (
 	analyzeImage         = "lifecycle/acceptance/analyzer"
 	analyzerPath         = "/cnb/lifecycle/analyzer"
 	cacheFixtureDir      = filepath.Join("testdata", "analyzer", "cache-dir")
+	daemonOS             string
 )
 
 var (
@@ -36,9 +37,11 @@ var (
 )
 
 func TestAnalyzer(t *testing.T) {
-	h.SkipIf(t, runtime.GOOS == "windows", "Analyzer is not yet supported on Windows")
-
 	rand.Seed(time.Now().UTC().UnixNano())
+
+	info, err := h.DockerCli(t).Info(context.TODO())
+	h.AssertNil(t, err)
+	daemonOS = info.OSType
 
 	// Setup registry
 
@@ -106,7 +109,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 
 	when("group path is provided", func() {
 		it("uses the provided group path", func() {
-			cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir)
+			cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir, daemonOS)
 			defer h.DockerVolumeRemove(t, cacheVolume)
 
 			_, tempDir := h.DockerRunAndCopy(t,
@@ -284,7 +287,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 
 			when("cache directory case", func() {
 				it("uses the provided cache", func() {
-					cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir)
+					cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir, daemonOS)
 					defer h.DockerVolumeRemove(t, cacheVolume)
 
 					_, tempDir := h.DockerRunAndCopy(t,
@@ -309,7 +312,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 
 				when("the provided cache directory isn't writeable by the CNB user's group", func() {
 					it("recursively chowns the directory", func() {
-						cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir)
+						cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir, daemonOS)
 						defer h.DockerVolumeRemove(t, cacheVolume)
 
 						output := h.DockerRun(t,
@@ -331,7 +334,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 
 				when("the provided cache directory is writeable by the CNB user's group", func() {
 					it("doesn't chown the directory", func() {
-						cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir)
+						cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir, daemonOS)
 						defer h.DockerVolumeRemove(t, cacheVolume)
 
 						output := h.DockerRun(t,
@@ -517,7 +520,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 
 			when("cache directory case", func() {
 				it("uses the provided cache", func() {
-					cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir)
+					cacheVolume := h.SeedDockerVolume(t, cacheFixtureDir, daemonOS)
 					defer h.DockerVolumeRemove(t, cacheVolume)
 
 					_, tempDir := h.DockerRunAndCopy(t,

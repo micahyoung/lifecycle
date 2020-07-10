@@ -157,8 +157,17 @@ func PushImage(dockerCli dockercli.CommonAPIClient, ref string, auth string) err
 	return nil
 }
 
-func SeedDockerVolume(t *testing.T, srcPath string) string {
-	helperImage := "busybox" // When Windows is supported, we can use "windows/nanoserver"
+func SeedDockerVolume(t *testing.T, srcPath string, daemonOS string) string {
+	helperImage := "busybox"
+	if daemonOS == "windows" {
+		helperImage = "windows/nanoserver"
+	}
+
+	dummyCmd := "true"
+	if daemonOS == "windows" {
+		dummyCmd = "dir" // TODO: what's the Windows equivalent of 'true'?
+	}
+
 	volumeName := "test-volume-" + RandString(10)
 	containerName := "test-volume-helper-" + RandString(10)
 
@@ -171,7 +180,7 @@ func SeedDockerVolume(t *testing.T, srcPath string) string {
 		"--volume", volumeName+":/target", // create a new empty docker volume
 		"--name", containerName,
 		helperImage,
-		"true",
+		dummyCmd,
 	))
 	defer Run(t, exec.Command("docker", "rm", containerName))
 

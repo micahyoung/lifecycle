@@ -10,7 +10,6 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -167,21 +166,21 @@ func Eventually(t *testing.T, test func() bool, every time.Duration, timeout tim
 	}
 }
 
-func HTTPGetE(url string) (string, error) {
-	resp, err := http.DefaultClient.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode >= 300 {
-		return "", fmt.Errorf("HTTP Status was bad: %s => %d", url, resp.StatusCode)
-	}
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
+//func HTTPGetE(url string) (string, error) {
+//	resp, err := http.DefaultClient.Get(url)
+//	if err != nil {
+//		return "", err
+//	}
+//	defer resp.Body.Close()
+//	if resp.StatusCode >= 300 {
+//		return "", fmt.Errorf("HTTP Status was bad: %s => %d", url, resp.StatusCode)
+//	}
+//	b, err := ioutil.ReadAll(resp.Body)
+//	if err != nil {
+//		return "", err
+//	}
+//	return string(b), nil
+//}
 
 func Run(t *testing.T, cmd *exec.Cmd) string {
 	t.Helper()

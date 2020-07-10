@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	ih "github.com/buildpacks/imgutil/testhelpers"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
@@ -33,7 +32,7 @@ var (
 )
 
 var (
-	registry *ih.DockerRegistry
+	registry *h.DockerRegistry
 )
 
 func TestAnalyzer(t *testing.T) {
@@ -49,7 +48,7 @@ func TestAnalyzer(t *testing.T) {
 	h.AssertNil(t, err)
 	defer os.RemoveAll(dockerConfigDir)
 
-	registry = ih.NewDockerRegistryWithAuth(dockerConfigDir)
+	registry = h.NewDockerRegistryWithAuth(dockerConfigDir)
 	registry.Start(t)
 	defer registry.Stop(t)
 

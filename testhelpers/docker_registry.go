@@ -122,7 +122,8 @@ func (r *DockerRegistry) Start(t *testing.T) {
 	// Get port
 	inspect, err := DockerCli(t).ContainerInspect(ctx, ctr.ID)
 	AssertNil(t, err)
-	r.Port = inspect.NetworkSettings.Ports["5000/tcp"][0].HostPort
+
+	r.Port = "5000" // HACK
 
 	var authHeaders map[string]string
 	if r.username != "" {

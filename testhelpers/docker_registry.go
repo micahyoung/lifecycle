@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -38,14 +37,12 @@ var registryImageNames = map[string]string{
 func NewDockerRegistry() *DockerRegistry {
 	return &DockerRegistry{
 		Name: "test-registry-" + RandString(10),
-		Host: registryHost(),
 	}
 }
 
 func NewDockerRegistryWithAuth(dockerConfigDir string) *DockerRegistry {
 	return &DockerRegistry{
 		Name:            "test-registry-" + RandString(10),
-		Host:            registryHost(),
 		username:        RandString(10),
 		password:        RandString(10),
 		DockerDirectory: dockerConfigDir,
@@ -126,6 +123,9 @@ func (r *DockerRegistry) Start(t *testing.T) {
 	fmt.Println("Network settings:", inspect.NetworkSettings)
 	fmt.Println("Hostname path:", inspect.HostnamePath)
 	r.Port = inspect.NetworkSettings.Ports["5000/tcp"][0].HostPort
+	fmt.Println("docker host:", DockerCli(t).DaemonHost())
+	r.Host = registryHost(t)
+	fmt.Println("registry host:", r.Host)
 
 	var authHeaders map[string]string
 	if r.username != "" {
@@ -159,14 +159,14 @@ func (r *DockerRegistry) Stop(t *testing.T) {
 	}
 }
 
-func registryHost() string {
+func registryHost(t *testing.T) string {
 	host := "localhost"
-	if dockerHost := os.Getenv("DOCKER_HOST"); dockerHost != "" {
-		u, err := url.Parse(dockerHost)
-		if err != nil {
-			panic("unable to parse DOCKER_HOST: " + err.Error())
-		}
-		host = u.Hostname()
+	if dockerHost := DockerCli(t).DaemonHost(); dockerHost != "" {
+		//u, err := url.Parse(dockerHost)
+		//if err != nil {
+		//	panic("unable to parse DOCKER_HOST: " + err.Error())
+		//}
+		host = dockerHost
 	}
 
 	return host

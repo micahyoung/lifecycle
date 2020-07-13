@@ -120,11 +120,12 @@ func (r *DockerRegistry) Start(t *testing.T) {
 	inspect, err := DockerCli(t).ContainerInspect(ctx, ctr.ID)
 	AssertNil(t, err)
 
-	fmt.Println("Network settings:", inspect.NetworkSettings)
+	fmt.Printf("Network settings: %+#v\n", inspect.NetworkSettings)
+	fmt.Printf("Networks: %+#v\n", inspect.NetworkSettings.Networks["bridge"])
 	fmt.Println("Hostname path:", inspect.HostnamePath)
-	r.Port = inspect.NetworkSettings.Ports["5000/tcp"][0].HostPort
+	r.Port = "5000"
 	fmt.Println("docker host:", DockerCli(t).DaemonHost())
-	r.Host = registryHost(t)
+	r.Host = inspect.NetworkSettings.Networks["nat"].IPAddress
 	fmt.Println("registry host:", r.Host)
 
 	var authHeaders map[string]string
@@ -159,18 +160,18 @@ func (r *DockerRegistry) Stop(t *testing.T) {
 	}
 }
 
-func registryHost(t *testing.T) string {
-	host := "localhost"
-	if dockerHost := DockerCli(t).DaemonHost(); dockerHost != "" {
-		//u, err := url.Parse(dockerHost)
-		//if err != nil {
-		//	panic("unable to parse DOCKER_HOST: " + err.Error())
-		//}
-		host = dockerHost
-	}
-
-	return host
-}
+//func registryHost(t *testing.T) string {
+//	host := "localhost"
+//	if dockerHost := DockerCli(t).DaemonHost(); dockerHost != "" {
+//		//u, err := url.Parse(dockerHost)
+//		//if err != nil {
+//		//	panic("unable to parse DOCKER_HOST: " + err.Error())
+//		//}
+//		host = dockerHost
+//	}
+//
+//	return host
+//}
 
 func (r *DockerRegistry) RepoName(name string) string {
 	return r.Host + ":" + r.Port + "/" + name

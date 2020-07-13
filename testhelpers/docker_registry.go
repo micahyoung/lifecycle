@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,6 +22,7 @@ import (
 )
 
 type DockerRegistry struct {
+	Host            string
 	Port            string
 	Name            string
 	DockerDirectory string
@@ -36,12 +38,14 @@ var registryImageNames = map[string]string{
 func NewDockerRegistry() *DockerRegistry {
 	return &DockerRegistry{
 		Name: "test-registry-" + RandString(10),
+		Host: registryHost(),
 	}
 }
 
 func NewDockerRegistryWithAuth(dockerConfigDir string) *DockerRegistry {
 	return &DockerRegistry{
 		Name:            "test-registry-" + RandString(10),
+		Host:            registryHost(),
 		username:        RandString(10),
 		password:        RandString(10),
 		DockerDirectory: dockerConfigDir,
@@ -123,7 +127,7 @@ func (r *DockerRegistry) Start(t *testing.T) {
 	var authHeaders map[string]string
 	if r.username != "" {
 		// Write Docker config and configure auth headers
-		writeDockerConfig(t, r.DockerDirectory, r.Port, r.encodedAuth())
+		writeDockerConfig(t, r.DockerDirectory, r.Host, r.Port, r.encodedAuth())
 
 		configContents, _ := ioutil.ReadFile(filepath.Join(r.DockerDirectory, "config.json"))
 		fmt.Println("config contents:", string(configContents))
@@ -135,7 +139,7 @@ func (r *DockerRegistry) Start(t *testing.T) {
 
 	// Wait for registry to be ready
 	Eventually(t, func() bool {
-		txt, err := HTTPGetE(fmt.Sprintf("http://localhost:%s/v2/_catalog", r.Port), authHeaders)
+		txt, err := HTTPGetE(fmt.Sprintf("http://%s:%s/v2/_catalog", r.Host, r.Port), authHeaders)
 		if err != nil {
 			fmt.Println("registry error:", err.Error())
 		}
@@ -152,8 +156,21 @@ func (r *DockerRegistry) Stop(t *testing.T) {
 	}
 }
 
+func registryHost() string {
+	host := "localhost"
+	if dockerHost := os.Getenv("DOCKER_HOST"); dockerHost != "" {
+		u, err := url.Parse(dockerHost)
+		if err != nil {
+			panic("unable to parse DOCKER_HOST: " + err.Error())
+		}
+		host = u.Hostname()
+	}
+
+	return host
+}
+
 func (r *DockerRegistry) RepoName(name string) string {
-	return "localhost:" + r.Port + "/" + name
+	return r.Host + ":" + r.Port + "/" + name
 }
 
 func (r *DockerRegistry) EncodedLabeledAuth() string {
@@ -172,17 +189,17 @@ func generateHtpasswd(t *testing.T, tempDir string, username string, password st
 	return CreateSingleFileTarReader("/registry_test_htpasswd", username+":"+string(passwordBytes))
 }
 
-func writeDockerConfig(t *testing.T, configDir, port, auth string) {
+func writeDockerConfig(t *testing.T, configDir, host, port, auth string) {
 	AssertNil(t, ioutil.WriteFile(
 		filepath.Join(configDir, "config.json"),
 		[]byte(fmt.Sprintf(`{
 			  "auths": {
-			    "localhost:%s": {
+			    "%s:%s": {
 			      "auth": "%s"
 			    }
 			  }
 			}
-			`, port, auth)),
+			`, host, port, auth)),
 		0666,
 	))
 }

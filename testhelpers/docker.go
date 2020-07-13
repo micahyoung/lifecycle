@@ -19,7 +19,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var dockerCliVal *dockercli.Client
+var dockerCliVal dockercli.CommonAPIClient
 var dockerCliOnce sync.Once
 
 type DockerCmd struct {
@@ -29,7 +29,7 @@ type DockerCmd struct {
 
 type DockerCmdOp func(*DockerCmd)
 
-func DockerCli(t *testing.T) *dockercli.Client {
+func DockerCli(t *testing.T) dockercli.CommonAPIClient {
 	dockerCliOnce.Do(func() {
 		var dockerCliErr error
 		dockerCliVal, dockerCliErr = dockercli.NewClientWithOpts(dockercli.FromEnv, dockercli.WithVersion("1.38"))
@@ -127,7 +127,7 @@ func ImageID(t *testing.T, repoName string) string {
 	return inspect.ID
 }
 
-func PullImage(dockerCli *dockercli.Client, ref string) error {
+func PullImage(dockerCli dockercli.CommonAPIClient, ref string) error {
 	rc, err := dockerCli.ImagePull(context.Background(), ref, dockertypes.ImagePullOptions{})
 	if err != nil {
 		// Retry

@@ -98,6 +98,23 @@ func (r *DockerRegistry) Start(t *testing.T) {
 	// Start container
 	AssertNil(t, DockerCli(t).ContainerStart(ctx, ctr.ID, types.ContainerStartOptions{}))
 
+	rc, stat, err := DockerCli(t).CopyFromContainer(ctx, ctr.ID, "/registry_test_htpasswd")
+	AssertNil(t, err)
+	defer rc.Close()
+	p := make([]byte, stat.Size)
+	_, err = rc.Read(p)
+	AssertNil(t, err)
+	fmt.Println("from container:", string(p))
+	tempFile, err := ioutil.TempFile("", "")
+	AssertNil(t, err)
+	ioutil.WriteFile(tempFile.Name(), p, 0755)
+	fmt.Println("tempfile:", tempFile.Name())
+
+	//cmd := exec.Command("docker", "exec", ctr.ID, "dir", "C:\\")
+	//output, err := cmd.CombinedOutput()
+	//fmt.Println("output:", string(output))
+	//AssertNil(t, err)
+
 	// Get port
 	inspect, err := DockerCli(t).ContainerInspect(ctx, ctr.ID)
 	AssertNil(t, err)

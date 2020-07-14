@@ -22,7 +22,7 @@ import (
 )
 
 type DockerRegistry struct {
-	Host            string
+	HostIP          string
 	Port            string
 	Name            string
 	DockerDirectory string
@@ -126,15 +126,20 @@ func (r *DockerRegistry) Start(t *testing.T) {
 	//fmt.Println("Hostname path:", inspect.HostnamePath)
 	//r.Port = "5000"
 	//fmt.Println("docker host:", DockerCli(t).DaemonHost())
-	//r.Host = inspect.NetworkSettings.Networks["nat"].IPAddress
-	//fmt.Println("registry host:", r.Host)
-	r.Host = registryHost(t)
+	//r.HostIP = inspect.NetworkSettings.Networks["nat"].IPAddress
+	//fmt.Println("registry host:", r.HostIP)
+
+	r.HostIP = "localhost"
 	r.Port = inspect.NetworkSettings.Ports["5000/tcp"][0].HostPort
+	if strings.Contains(DockerCli(t).DaemonHost(), "pipe") { // Docker in Docker
+		r.HostIP = inspect.NetworkSettings.Networks["nat"].IPAddress // Only works on Windows, but that's the only time we currently need Docker in Docker
+		r.Port = "5000"
+	}
 
 	var authHeaders map[string]string
 	if r.username != "" {
 		// Write Docker config and configure auth headers
-		writeDockerConfig(t, r.DockerDirectory, r.Host, r.Port, r.encodedAuth())
+		writeDockerConfig(t, r.DockerDirectory, r.HostIP, r.Port, r.encodedAuth())
 
 		configContents, _ := ioutil.ReadFile(filepath.Join(r.DockerDirectory, "config.json"))
 		fmt.Println("config contents:", string(configContents))
@@ -142,11 +147,9 @@ func (r *DockerRegistry) Start(t *testing.T) {
 		authHeaders = map[string]string{"Authorization": "Basic " + r.encodedAuth()}
 	}
 
-	fmt.Println("auth headers:", authHeaders)
-
 	// Wait for registry to be ready
 	Eventually(t, func() bool {
-		txt, err := HTTPGetE(fmt.Sprintf("http://%s:%s/v2/_catalog", r.Host, r.Port), authHeaders)
+		txt, err := HTTPGetE(fmt.Sprintf("http://%s:%s/v2/_catalog", r.HostIP, r.Port), authHeaders)
 		if err != nil {
 			fmt.Println("registry error:", err.Error())
 		}
@@ -163,17 +166,17 @@ func (r *DockerRegistry) Stop(t *testing.T) {
 	}
 }
 
-func registryHost(t *testing.T) string {
-	host := "localhost"
-	if strings.Contains(DockerCli(t).DaemonHost(), "pipe") { // Docker in Docker
-		host = "host.docker.internal"
-	}
-
-	return host
-}
+//func registryHost(t *testing.T) string {
+//	host := "localhost"
+//	if strings.Contains(DockerCli(t).DaemonHost(), "pipe") { // Docker in Docker
+//		host = "host.docker.internal"
+//	}
+//
+//	return host
+//}
 
 func (r *DockerRegistry) RepoName(name string) string {
-	return r.Host + ":" + r.Port + "/" + name
+	return r.HostIP + ":" + r.Port + "/" + name
 }
 
 func (r *DockerRegistry) EncodedLabeledAuth() string {

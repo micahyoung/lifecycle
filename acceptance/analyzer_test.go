@@ -56,7 +56,7 @@ func TestAnalyzer(t *testing.T) {
 
 	// Setup test container
 
-	h.MakeAndCopyLifecycle(t, "linux", analyzerBinaryDir)
+	h.MakeAndCopyLifecycle(t, daemonOS, analyzerBinaryDir)
 	h.DockerBuild(t, analyzeImage, analyzeDockerContext)
 	defer h.DockerImageRemove(t, analyzeImage)
 

@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -40,7 +41,17 @@ func DockerCli(t *testing.T) dockercli.CommonAPIClient {
 
 func DockerBuild(t *testing.T, name, context string) {
 	t.Helper()
-	cmd := exec.Command("docker", "build", "-t", name, context)
+	dockerfileName := "Dockerfile"
+	if runtime.GOOS == "windows" {
+		dockerfileName += ".windows"
+	}
+	cmd := exec.Command(
+		"docker",
+		"build",
+		"-f", dockerfileName,
+		"-t", name,
+		context,
+	)
 	Run(t, cmd)
 }
 

@@ -167,7 +167,7 @@ func PushImage(dockerCli dockercli.CommonAPIClient, ref string, auth string) err
 func SeedDockerVolume(t *testing.T, srcPath string, daemonOS string) string {
 	helperImage := "busybox"
 	if daemonOS == "windows" {
-		helperImage = "windows/nanoserver"
+		helperImage = "mcr.microsoft.com/windows/nanoserver:1809"
 	}
 
 	dummyCmd := "true"

@@ -42,13 +42,13 @@ func DockerCli(t *testing.T) dockercli.CommonAPIClient {
 func DockerBuild(t *testing.T, name, context string) {
 	t.Helper()
 	dockerfileName := "Dockerfile"
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" { // TODO: see about consolidating and/or re-organizing this code.
 		dockerfileName += ".windows"
 	}
 	cmd := exec.Command(
 		"docker",
 		"build",
-		"-f", dockerfileName,
+		"-f", filepath.Join(context, dockerfileName),
 		"-t", name,
 		context,
 	)

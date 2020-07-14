@@ -29,11 +29,18 @@ var (
 	analyzerPath         = "/cnb/lifecycle/analyzer"
 	cacheFixtureDir      = filepath.Join("testdata", "analyzer", "cache-dir")
 	daemonOS             string
+	registry             *h.DockerRegistry
 )
 
-var (
-	registry *h.DockerRegistry
-)
+var baseImageNames = map[string]string{
+	"linux":   "ubuntu:bionic",
+	"windows": "mcr.microsoft.com/windows/nanoserver:1809",
+}
+
+var dockerfileNames = map[string]string{
+	"linux":   "Dockerfile",
+	"windows": "Dockerfile.windows",
+}
 
 func TestAnalyzer(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -175,6 +182,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 					"docker",
 					"build",
 					"-t", appImage,
+					"--build-arg", fmt.Sprintf("fromImage=%s", baseImageNames[daemonOS]),
 					"--build-arg", fmt.Sprintf("metadata=%s", metadata),
 					filepath.Join("testdata", "analyzer", "app-image"),
 				)
@@ -252,6 +260,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						"docker",
 						"build",
 						"-t", cacheImage,
+						"--build-arg", fmt.Sprintf("fromImage=%s", baseImageNames[daemonOS]),
 						"--build-arg", fmt.Sprintf("metadata=%s", metadata),
 						filepath.Join("testdata", "analyzer", "cache-image"),
 					)
@@ -365,6 +374,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 				t,
 				"some-app-image-"+h.RandString(10),
 				filepath.Join("testdata", "analyzer", "app-image"),
+				"--build-arg", fmt.Sprintf("fromImage=%s", baseImageNames[daemonOS]),
 				"--build-arg", fmt.Sprintf("metadata=%s", metadata),
 			)
 		})
@@ -488,6 +498,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						t,
 						"some-cache-image-"+h.RandString(10),
 						filepath.Join("testdata", "analyzer", "cache-image"),
+						"--build-arg", fmt.Sprintf("fromImage=%s", baseImageNames[daemonOS]),
 						"--build-arg", fmt.Sprintf("metadata=%s", metadata),
 					)
 				})
@@ -557,12 +568,29 @@ func flattenMetadata(t *testing.T, path string, metadataStruct interface{}) stri
 	return string(flatMetadata)
 }
 
-func buildRegistryImage(t *testing.T, repoName, context string, buildArgs ...string) (string, string) {
+//func DockerBuild(t *testing.T, name, context string) {
+//	t.Helper()
+//	dockerfileName := "Dockerfile"
+//	if runtime.GOOS == "windows" {
+//		dockerfileName += ".windows"
+//	}
+//	cmd := exec.Command(
+//		"docker",
+//		"build",
+//		"-f", dockerfileName,
+//		"-t", name,
+//		context,
+//	)
+//	Run(t, cmd)
+//}
+
+func buildRegistryImage(t *testing.T, repoName, context string, buildArgs ...string) (string, string) { // TODO: refactor DockerBuild to be more flexible and use it here.
 	regRepoName := registry.RepoName(repoName)
 
 	// Setup cmd
 	cmdArgs := []string{
 		"build",
+		"-f", filepath.Join(context, dockerfileNames[daemonOS]),
 		"-t", regRepoName,
 	}
 	cmdArgs = append(cmdArgs, buildArgs...)

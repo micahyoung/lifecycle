@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -39,20 +38,14 @@ func DockerCli(t *testing.T) dockercli.CommonAPIClient {
 	return dockerCliVal
 }
 
-func DockerBuild(t *testing.T, name, context string) {
+func DockerBuild(t *testing.T, name, context string, ops ...DockerCmdOp) {
 	t.Helper()
-	dockerfileName := "Dockerfile"
-	if runtime.GOOS == "windows" { // TODO: see about consolidating and/or re-organizing this code.
-		dockerfileName += ".windows"
-	}
-	cmd := exec.Command(
-		"docker",
-		"build",
-		"-f", filepath.Join(context, dockerfileName),
-		"-t", name,
-		context,
-	)
-	Run(t, cmd)
+
+	args := []string{"-t", name, context}
+	args = formatArgs(args, ops...)
+	args = append([]string{"build"}, args...) // prepend build
+
+	Run(t, exec.Command("docker", args...))
 }
 
 func DockerImageRemove(t *testing.T, name string) {
@@ -62,20 +55,22 @@ func DockerImageRemove(t *testing.T, name string) {
 }
 
 func DockerRun(t *testing.T, image string, ops ...DockerCmdOp) string {
-	args := formatArgs(image, ops...)
+	t.Helper()
+
+	args := []string{image}
+	args = formatArgs(args, ops...)
 	args = append([]string{"run", "--rm"}, args...) // prepend run --rm
 
 	return Run(t, exec.Command("docker", args...))
 }
 
-func formatArgs(image string, ops ...DockerCmdOp) []string {
+func formatArgs(args []string, ops ...DockerCmdOp) []string {
 	cmd := DockerCmd{}
 
 	for _, op := range ops {
 		op(&cmd)
 	}
 
-	args := []string{image}
 	args = append(cmd.flags, args...) // prepend flags
 	args = append(args, cmd.args...)  // append args
 
@@ -103,7 +98,8 @@ func WithBash(args ...string) DockerCmdOp {
 func DockerRunAndCopy(t *testing.T, image, path string, ops ...DockerCmdOp) (string, string) {
 	containerName := "test-container-" + RandString(10)
 	ops = append(ops, WithFlags("--name", containerName))
-	args := formatArgs(image, ops...)
+	args := []string{image}
+	args = formatArgs(args, ops...)
 	args = append([]string{"run"}, args...) // prepend run
 
 	output := Run(t, exec.Command("docker", args...))

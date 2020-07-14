@@ -64,7 +64,11 @@ func TestAnalyzer(t *testing.T) {
 	// Setup test container
 
 	h.MakeAndCopyLifecycle(t, daemonOS, analyzerBinaryDir)
-	h.DockerBuild(t, analyzeImage, analyzeDockerContext)
+	h.DockerBuild(t,
+		analyzeImage,
+		analyzeDockerContext,
+		h.WithFlags("-f", filepath.Join(analyzeDockerContext, dockerfileNames[daemonOS])),
+	)
 	defer h.DockerImageRemove(t, analyzeImage)
 
 	spec.Run(t, "acceptance-analyzer", testAnalyzer, spec.Parallel(), spec.Report(report.Terminal{}))
@@ -590,7 +594,6 @@ func buildRegistryImage(t *testing.T, repoName, context string, buildArgs ...str
 	// Setup cmd
 	cmdArgs := []string{
 		"build",
-		"-f", filepath.Join(context, dockerfileNames[daemonOS]),
 		"-t", regRepoName,
 	}
 	cmdArgs = append(cmdArgs, buildArgs...)

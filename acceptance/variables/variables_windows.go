@@ -7,4 +7,7 @@ const (
 	DummyCommand       = "dir"
 )
 
-var DockerSocketMount = []string{"--volume", "\\\\.\\pipe\\docker_engine:\\\\.\\pipe\\docker_engine"}
+var DockerSocketMount = []string{
+	"--volume", "\\\\.\\pipe\\docker_engine:\\\\.\\pipe\\docker_engine",
+	"--user", "ContainerAdministrator",
+}

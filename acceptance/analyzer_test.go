@@ -563,19 +563,10 @@ func flattenMetadata(t *testing.T, path string, metadataStruct interface{}) stri
 	return string(flatMetadata)
 }
 
-func buildRegistryImage(t *testing.T, repoName, context string, buildArgs ...string) (string, string) { // TODO: refactor DockerBuild to be more flexible and use it here.
-	regRepoName := registry.RepoName(repoName)
-
-	// Setup cmd
-	cmdArgs := []string{
-		"build",
-		"-t", regRepoName,
-	}
-	cmdArgs = append(cmdArgs, buildArgs...)
-	cmdArgs = append(cmdArgs, context)
-
+func buildRegistryImage(t *testing.T, repoName, context string, buildArgs ...string) (string, string) {
 	// Build image
-	h.Run(t, exec.Command("docker", cmdArgs...))
+	regRepoName := registry.RepoName(repoName)
+	h.DockerBuild(t, regRepoName, context, h.WithArgs(buildArgs...))
 
 	// Push image
 	h.AssertNil(t, h.PushImage(h.DockerCli(t), regRepoName, registry.EncodedLabeledAuth()))

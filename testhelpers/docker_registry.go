@@ -102,34 +102,9 @@ func (r *DockerRegistry) Start(t *testing.T) {
 	// Start container
 	AssertNil(t, DockerCli(t).ContainerStart(ctx, ctr.ID, types.ContainerStartOptions{}))
 
-	//rc, stat, err := DockerCli(t).CopyFromContainer(ctx, ctr.ID, "/registry_test_htpasswd")
-	//AssertNil(t, err)
-	//defer rc.Close()
-	//p := make([]byte, stat.Size)
-	//_, err = rc.Read(p)
-	//AssertNil(t, err)
-	//fmt.Println("from container:", string(p))
-	//tempFile, err := ioutil.TempFile("", "")
-	//AssertNil(t, err)
-	//ioutil.WriteFile(tempFile.Name(), p, 0755)
-	//fmt.Println("tempfile:", tempFile.Name())
-
-	//cmd := exec.Command("docker", "exec", ctr.ID, "dir", "C:\\")
-	//output, err := cmd.CombinedOutput()
-	//fmt.Println("output:", string(output))
-	//AssertNil(t, err)
-
 	// Get port
 	inspect, err := DockerCli(t).ContainerInspect(ctx, ctr.ID)
 	AssertNil(t, err)
-
-	//fmt.Printf("Network settings: %+#v\n", inspect.NetworkSettings)
-	//fmt.Printf("Networks: %+#v\n", inspect.NetworkSettings.Networks["bridge"])
-	//fmt.Println("Hostname path:", inspect.HostnamePath)
-	//r.Port = "5000"
-	//fmt.Println("docker host:", DockerCli(t).DaemonHost())
-	//r.HostIP = inspect.NetworkSettings.Networks["nat"].IPAddress
-	//fmt.Println("registry host:", r.HostIP)
 
 	r.HostIP = "localhost"
 	r.Port = inspect.NetworkSettings.Ports["5000/tcp"][0].HostPort
@@ -167,15 +142,6 @@ func (r *DockerRegistry) Stop(t *testing.T) {
 		DockerCli(t).ContainerRemove(context.TODO(), r.Name, types.ContainerRemoveOptions{Force: true})
 	}
 }
-
-//func registryHost(t *testing.T) string {
-//	host := "localhost"
-//	if strings.Contains(DockerCli(t).DaemonHost(), "pipe") { // Docker in Docker
-//		host = "host.docker.internal"
-//	}
-//
-//	return host
-//}
 
 func (r *DockerRegistry) RepoName(name string) string {
 	return r.HostIP + ":" + r.Port + "/" + name

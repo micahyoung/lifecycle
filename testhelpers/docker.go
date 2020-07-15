@@ -17,6 +17,8 @@ import (
 	dockercli "github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/pkg/errors"
+
+	"github.com/buildpacks/lifecycle/acceptance/variables"
 )
 
 var dockerCliVal dockercli.CommonAPIClient
@@ -164,30 +166,20 @@ func PushImage(dockerCli dockercli.CommonAPIClient, ref string, auth string) err
 	return nil
 }
 
-func SeedDockerVolume(t *testing.T, srcPath string, daemonOS string) string {
-	helperImage := "busybox"
-	if daemonOS == "windows" {
-		helperImage = "mcr.microsoft.com/windows/nanoserver:1809"
-	}
-
-	dummyCmd := "true"
-	if daemonOS == "windows" {
-		dummyCmd = "dir" // TODO: what's the Windows equivalent of 'true'?
-	}
-
+func SeedDockerVolume(t *testing.T, srcPath string) string {
 	volumeName := "test-volume-" + RandString(10)
 	containerName := "test-volume-helper-" + RandString(10)
 
 	Run(t, exec.Command(
-		"docker", "pull", helperImage,
+		"docker", "pull", variables.VolumeHelperImage,
 	))
 
 	Run(t, exec.Command(
 		"docker", "run",
 		"--volume", volumeName+":/target", // create a new empty docker volume
 		"--name", containerName,
-		helperImage,
-		dummyCmd,
+		variables.VolumeHelperImage,
+		variables.DummyCommand,
 	))
 	defer Run(t, exec.Command("docker", "rm", containerName))
 

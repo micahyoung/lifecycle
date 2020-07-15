@@ -42,6 +42,11 @@ var dockerfileNames = map[string]string{
 	"windows": "Dockerfile.windows",
 }
 
+var dockerSocket = map[string]string{
+	"linux":   "/var/run/docker.sock",
+	"windows": "\\\\.\\pipe\\docker_engine",
+}
+
 func TestAnalyzer(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -167,7 +172,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 			_, tempDir := h.DockerRunAndCopy(t,
 				analyzeImage,
 				"/layers/analyzed.toml",
-				h.WithFlags("--mount", "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"),
+				h.WithFlags("--mount", fmt.Sprintf("type=bind,source=%s,target=%s", dockerSocket[daemonOS], dockerSocket[daemonOS])),
 				h.WithArgs(analyzerPath, "-daemon", "some-image"),
 			)
 			defer os.RemoveAll(tempDir)
@@ -201,7 +206,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 				_, tempDir := h.DockerRunAndCopy(t,
 					analyzeImage,
 					"/layers",
-					h.WithFlags("--mount", "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"),
+					h.WithFlags("--mount", fmt.Sprintf("type=bind,source=%s,target=%s", dockerSocket[daemonOS], dockerSocket[daemonOS])),
 					h.WithArgs(analyzerPath, "-daemon", appImage),
 				)
 				defer os.RemoveAll(tempDir)
@@ -225,7 +230,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 					_, tempDir := h.DockerRunAndCopy(t,
 						analyzeImage,
 						"/layers",
-						h.WithFlags("--mount", "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"),
+						h.WithFlags("--mount", fmt.Sprintf("type=bind,source=%s,target=%s", dockerSocket[daemonOS], dockerSocket[daemonOS])),
 						h.WithArgs(
 							analyzerPath,
 							"-daemon",
@@ -280,7 +285,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						analyzeImage,
 						"/layers",
 						h.WithFlags(
-							"--mount", "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock",
+							"--mount", fmt.Sprintf("type=bind,source=%s,target=%s", dockerSocket[daemonOS], dockerSocket[daemonOS]),
 							"--env", "CNB_REGISTRY_AUTH={}", // In practice, we never set this variable in the daemon case. Setting to avoid failure to stat docker config directory when initializing cache.
 						),
 						h.WithArgs(
@@ -306,7 +311,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						analyzeImage,
 						"/layers",
 						h.WithFlags(
-							"--mount", "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock",
+							"--mount", fmt.Sprintf("type=bind,source=%s,target=%s", dockerSocket[daemonOS], dockerSocket[daemonOS]),
 							"--volume", fmt.Sprintf("%s:/cache", cacheVolume),
 						),
 						h.WithArgs(
@@ -330,7 +335,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						output := h.DockerRun(t,
 							analyzeImage,
 							h.WithFlags(
-								"--mount", "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock",
+								"--mount", fmt.Sprintf("type=bind,source=%s,target=%s", dockerSocket[daemonOS], dockerSocket[daemonOS]),
 								"--volume", fmt.Sprintf("%s:/cache", cacheVolume),
 							),
 							h.WithBash(
@@ -352,7 +357,7 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						output := h.DockerRun(t,
 							analyzeImage,
 							h.WithFlags(
-								"--mount", "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock",
+								"--mount", fmt.Sprintf("type=bind,source=%s,target=%s", dockerSocket[daemonOS], dockerSocket[daemonOS]),
 								"--volume", fmt.Sprintf("%s:/cache", cacheVolume),
 							),
 							h.WithBash(

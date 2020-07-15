@@ -21,6 +21,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// TODO: remove this file and PR changes back to imgutil
+
 type DockerRegistry struct {
 	HostIP          string
 	Port            string

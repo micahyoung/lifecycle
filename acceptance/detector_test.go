@@ -3,21 +3,23 @@
 package acceptance
 
 import (
+	"context"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
+
+	"github.com/buildpacks/lifecycle/cmd"
 
 	"github.com/BurntSushi/toml"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 
 	"github.com/buildpacks/lifecycle"
-	"github.com/buildpacks/lifecycle/cmd"
 	h "github.com/buildpacks/lifecycle/testhelpers"
 )
 
@@ -25,18 +27,27 @@ var (
 	detectDockerContext = filepath.Join("testdata", "detector")
 	detectorBinaryDir   = filepath.Join("testdata", "detector", "container", "cnb", "lifecycle")
 	detectImage         = "lifecycle/acceptance/detector"
-	userID              = "1234"
+	userID              string
+	daemonOS            string
 )
 
 func TestDetector(t *testing.T) {
-	h.SkipIf(t, runtime.GOOS == "windows", "Detector acceptance tests are not yet supported on Windows")
-
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	h.MakeAndCopyLifecycle(t, "linux", detectorBinaryDir)
-	h.DockerBuild(t, detectImage, detectDockerContext)
+	info, err := h.DockerCli(t).Info(context.TODO())
+	h.AssertNil(t, err)
+	daemonOS = info.OSType
+
+	dockerfilePath := filepath.Join(detectDockerContext, fmt.Sprintf("Dockerfile.%s", daemonOS))
+
+	h.MakeAndCopyLifecycle(t, daemonOS, detectorBinaryDir)
+	h.DockerBuild(t, detectImage, detectDockerContext, h.WithDockerfile(dockerfilePath))
 	defer h.DockerImageRemove(t, detectImage)
 
+	userID = "1234"
+	if daemonOS == "windows" {
+		userID = "ContainerUser"
+	}
 	spec.Run(t, "acceptance-detector", testDetector, spec.Parallel(), spec.Report(report.Terminal{}))
 }
 
@@ -53,7 +64,12 @@ func testDetector(t *testing.T, when spec.G, it spec.S) {
 
 	when("running as a root", func() {
 		it("errors", func() {
-			command := exec.Command("docker", "run", "--rm", "--user", "root", detectImage)
+			rootUser := "root"
+			if daemonOS == "windows" {
+				rootUser = "ContainerAdministrator"
+			}
+
+			command := exec.Command("docker", "run", "--rm", "--user", rootUser, detectImage)
 			output, err := command.CombinedOutput()
 			h.AssertNotNil(t, err)
 			expected := "failed to build: refusing to run as root"
@@ -187,8 +203,14 @@ func testDetector(t *testing.T, when spec.G, it spec.S) {
 
 			// check platform directory
 			logs := h.Run(t, exec.Command("docker", "logs", containerName))
+
 			expectedPlatformPath := "platform_path: /custom_platform"
 			expectedAppDir := "app_dir: /custom_workspace"
+			if daemonOS == "windows" {
+				expectedPlatformPath = `platform_path: C:\custom_platform`
+				expectedAppDir = `app_dir: C:\custom_workspace`
+			}
+
 			h.AssertStringContains(t, logs, expectedPlatformPath)
 			h.AssertStringContains(t, logs, expectedAppDir)
 		})

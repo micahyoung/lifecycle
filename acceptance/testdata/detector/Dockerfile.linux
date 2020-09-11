@@ -3,7 +3,7 @@ FROM ubuntu:bionic
 ARG cnb_uid=1234
 ARG cnb_gid=1000
 
-COPY ./container/ /
+COPY container /
 
 ENTRYPOINT ["/cnb/lifecycle/detector"]
 

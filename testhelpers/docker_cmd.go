@@ -7,6 +7,12 @@ type DockerCmd struct {
 
 type DockerCmdOp func(*DockerCmd)
 
+func WithDockerfile(dockerfilePath string) DockerCmdOp {
+	return func(cmd *DockerCmd) {
+		cmd.flags = append(cmd.flags, []string{"-f", dockerfilePath}...)
+	}
+}
+
 func WithFlags(flags ...string) DockerCmdOp {
 	return func(cmd *DockerCmd) {
 		cmd.flags = append(cmd.flags, flags...)

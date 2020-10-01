@@ -63,7 +63,7 @@ func testDetector(t *testing.T, when spec.G, it spec.S) {
 	})
 
 	when("running as a root", func() {
-		it("errors", func() {
+		it.Focus("errors", func() {
 			rootUser := "root"
 			if daemonOS == "windows" {
 				rootUser = "ContainerAdministrator"

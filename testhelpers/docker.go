@@ -49,6 +49,7 @@ func DockerRun(t *testing.T, image string, ops ...DockerCmdOp) string {
 	return Run(t, exec.Command("docker", append([]string{"run", "--rm"}, args...)...))
 }
 
+//TODO swap image and path
 func DockerRunAndCopy(t *testing.T, containerName, copyDir, image, path string, ops ...DockerCmdOp) string {
 	ops = append(ops, WithFlags("--name", containerName))
 	args := formatArgs([]string{image}, ops...)
@@ -56,6 +57,22 @@ func DockerRunAndCopy(t *testing.T, containerName, copyDir, image, path string, 
 	output := Run(t, exec.Command("docker", append([]string{"run"}, args...)...))
 	Run(t, exec.Command("docker", "cp", containerName+":"+path, copyDir))
 	return output
+}
+
+func DockerSeedRunAndCopy(t *testing.T, containerName, srcDir, srcCtrPath, outputDir, outputCtrPath, image string, ops ...DockerCmdOp) string {
+	ops = append(ops, WithFlags("--name", containerName))
+	args := formatArgs([]string{image}, ops...)
+
+	output := Run(t, exec.Command("docker", append([]string{"create"}, args...)...))
+	output += Run(t, exec.Command("docker", "cp", srcDir, containerName+":"+srcCtrPath))
+	output += Run(t, exec.Command("docker", "start", "--attach", containerName))
+	output += Run(t, exec.Command("docker", "cp", containerName+":"+outputCtrPath, outputDir))
+
+	return output
+}
+
+func DockerCopyOut(t *testing.T, containerName, srcCtrPath, outputDir string) string {
+	return Run(t, exec.Command("docker", "cp", containerName+":"+srcCtrPath, outputDir))
 }
 
 func DockerContainerExists(t *testing.T, containerName string) bool {
@@ -95,13 +112,14 @@ func SeedDockerVolume(t *testing.T, srcPath string) string {
 	volumeName := "test-volume-" + RandString(10)
 	containerName := "test-volume-helper-" + RandString(10)
 
-	Run(t, exec.Command("docker", "pull", variables.VolumeHelperImage))
+	vh := variables.VariableHelper{OS: "linux"}
+	Run(t, exec.Command("docker", "pull", vh.VolumeHelperImage()))
 	Run(t, exec.Command("docker", append([]string{
 		"run",
 		"--volume", volumeName + ":" + "/target", // create a new empty volume
 		"--name", containerName,
-		variables.VolumeHelperImage},
-		variables.DummyCommand...)...))
+		vh.VolumeHelperImage()},
+		vh.DummyCommand()...)...))
 	defer Run(t, exec.Command("docker", "rm", containerName))
 
 	fis, err := ioutil.ReadDir(srcPath)

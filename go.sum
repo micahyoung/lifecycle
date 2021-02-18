@@ -52,8 +52,6 @@ github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59 h1:WWB576BN5zNSZc
 github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59/go.mod h1:q/89r3U2H7sSsE2t6Kca0lfwTK8JdoNGS/yzM/4iH5I=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
-github.com/buildpacks/imgutil v0.0.0-20210119193758-3436c122b313 h1:8kyOoX7ZIeh43gD0h3G7hTuUdrD7g1Igw3v8xN6yxF8=
-github.com/buildpacks/imgutil v0.0.0-20210119193758-3436c122b313/go.mod h1:JiWXkmkaiXrr5nq77JUtu7ys/5OAznS4VI7TwKthP7s=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
@@ -66,6 +64,7 @@ github.com/containerd/containerd v1.3.3 h1:LoIzb5y9x5l8VKAlyrbusNPXqBY0+kviRloxF
 github.com/containerd/containerd v1.3.3/go.mod h1:bC6axHOhabU15QhwfG7w5PipXdVtMXFTttgp+kVtyUA=
 github.com/containerd/stargz-snapshotter/estargz v0.0.0-20201223015020-a9a0c2d64694 h1:OVQ4FVXeE6OjzuUifzER+7EulqTqw/94oKSqnooEowQ=
 github.com/containerd/stargz-snapshotter/estargz v0.0.0-20201223015020-a9a0c2d64694/go.mod h1:E9uVkkBKf0EaC39j2JVW9EzdNhYvpz6eQIjILHebruk=
+github.com/containerd/stargz-snapshotter/estargz v0.4.1 h1:5e7heayhB7CcgdTkqfZqrNaNv15gABwr3Q2jBTbLlt4=
 github.com/containerd/stargz-snapshotter/estargz v0.4.1/go.mod h1:x7Q9dg9QYb4+ELgxmo4gBUeJB0tl5dqH1Sdz0nJU1QM=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
@@ -162,6 +161,7 @@ github.com/google/go-cmp v0.5.4 h1:L8R9j+yAqZuZjsqh/z+F1NCffTKKLShY6zXTItVIZ8M=
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-containerregistry v0.4.0 h1:45axtqLd66llqD8R9XgiCQ64foc7I2xkAG40NwR5YFw=
 github.com/google/go-containerregistry v0.4.0/go.mod h1:TX4KwzBRckt63iM22ZNHzUGqXMdLE1UFJuEQnC/14fE=
+github.com/google/go-containerregistry v0.4.1 h1:Lrcj2AOoZ7WKawsoKAh2O0dH0tBqMW2lTEmozmK4Z3k=
 github.com/google/go-containerregistry v0.4.1/go.mod h1:Ct15B4yir3PLOP5jsy0GNeYVaIZs/MK/Jz5any1wFW0=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/google/gofuzz v1.1.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
@@ -228,6 +228,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2 h1:g+4J5sZg6osfvEfkRZxJ1em0VT95/UOZgi/l7zi1/oE=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2/go.mod h1:eD9eIE7cdwcMi9rYluz88Jz2VyhSmden33/aXg4oVIY=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
+github.com/micahyoung/buildpacks-imgutil v0.0.0-20210305121203-d4af068a3471 h1:f3snakpNwakvbEEnwAtbl54gVgBn0PNnnV3ly2meaTI=
+github.com/micahyoung/buildpacks-imgutil v0.0.0-20210305121203-d4af068a3471/go.mod h1:JiWXkmkaiXrr5nq77JUtu7ys/5OAznS4VI7TwKthP7s=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

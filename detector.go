@@ -127,6 +127,7 @@ func (d *Detector) detectGroup(group buildpack.Group, done []buildpack.GroupBuil
 	return d.Resolver.Resolve(done, d.Runs)
 }
 
+<<<<<<< Updated upstream
 func hasID(bps []buildpack.GroupBuildpack, id string) bool {
 	for _, bp := range bps {
 		if bp.ID == id {
@@ -138,6 +139,25 @@ func hasID(bps []buildpack.GroupBuildpack, id string) bool {
 
 type DefaultResolver struct {
 	Logger Logger
+=======
+type commandFactory interface {
+	NewCommand(cmd string, args ...string) (*exec.Cmd, error)
+}
+
+type Provide struct {
+	Name string `toml:"name"`
+}
+
+type DetectConfig struct {
+	FullEnv        []string
+	ClearEnv       []string
+	AppDir         string
+	PlatformDir    string
+	BuildpacksDir  string
+	Logger         Logger
+	CommandFactory commandFactory
+	runs           *sync.Map
+>>>>>>> Stashed changes
 }
 
 // Resolve aggregates the detect output for a group of buildpacks and tries to resolve a build plan for the group.
@@ -285,6 +305,264 @@ func (r *DefaultResolver) runTrial(i int, trial detectTrial) (depMap, detectTria
 	return deps, trial, nil
 }
 
+<<<<<<< Updated upstream
+=======
+func (b *BuildpackTOML) Detect(c *DetectConfig) DetectRun {
+	appDir, err := filepath.Abs(c.AppDir)
+	if err != nil {
+		return DetectRun{Code: -1, Err: err}
+	}
+	platformDir, err := filepath.Abs(c.PlatformDir)
+	if err != nil {
+		return DetectRun{Code: -1, Err: err}
+	}
+	planDir, err := ioutil.TempDir("", "plan.")
+	if err != nil {
+		return DetectRun{Code: -1, Err: err}
+	}
+	defer os.RemoveAll(planDir)
+
+	planPath := filepath.Join(planDir, "plan.toml")
+	if err := ioutil.WriteFile(planPath, nil, 0777); err != nil {
+		return DetectRun{Code: -1, Err: err}
+	}
+
+	out := &bytes.Buffer{}
+	cmd, err := c.CommandFactory.NewCommand(
+		filepath.Join(b.Dir, "bin", "detect"),
+		platformDir,
+		planPath,
+	)
+	if err != nil {
+		return DetectRun{Code: -1, Err: errors.Wrap(err, "failed to initialize new command")}
+	}
+	cmd.Dir = appDir
+	cmd.Stdout = out
+	cmd.Stderr = out
+	cmd.Env = append([]string{}, c.FullEnv...)
+	if b.Buildpack.ClearEnv {
+		cmd.Env = append([]string{}, c.ClearEnv...)
+	}
+	cmd.Env = append(cmd.Env, EnvBuildpackDir+"="+b.Dir)
+
+	if err := cmd.Run(); err != nil {
+		if err, ok := err.(*exec.ExitError); ok {
+			if status, ok := err.Sys().(syscall.WaitStatus); ok {
+				return DetectRun{Code: status.ExitStatus(), Output: out.Bytes()}
+			}
+		}
+		return DetectRun{Code: -1, Err: err, Output: out.Bytes()}
+	}
+	var t DetectRun
+	if _, err := toml.DecodeFile(planPath, &t); err != nil {
+		return DetectRun{Code: -1, Err: err}
+	}
+	if api.MustParse(b.API).Equal(api.MustParse("0.2")) {
+		if t.hasInconsistentVersions() || t.Or.hasInconsistentVersions() {
+			t.Err = errors.Errorf(`buildpack %s has a "version" key that does not match "metadata.version"`, b.Buildpack.ID)
+			t.Code = -1
+		}
+	}
+	if api.MustParse(b.API).Compare(api.MustParse("0.3")) >= 0 {
+		if t.hasDoublySpecifiedVersions() || t.Or.hasDoublySpecifiedVersions() {
+			t.Err = errors.Errorf(`buildpack %s has a "version" key and a "metadata.version" which cannot be specified together. "metadata.version" should be used instead`, b.Buildpack.ID)
+			t.Code = -1
+		}
+	}
+	if api.MustParse(b.API).Compare(api.MustParse("0.3")) >= 0 {
+		if t.hasTopLevelVersions() || t.Or.hasTopLevelVersions() {
+			c.Logger.Warnf(`Warning: buildpack %s has a "version" key. This key is deprecated in build plan requirements in buildpack API 0.3. "metadata.version" should be used instead`, b.Buildpack.ID)
+		}
+	}
+	t.Output = out.Bytes()
+	return t
+}
+
+type BuildpackGroup struct {
+	Group []GroupBuildpack `toml:"group"`
+}
+
+func (bg BuildpackGroup) Detect(c *DetectConfig) (BuildpackGroup, BuildPlan, error) {
+	if c.runs == nil {
+		c.runs = &sync.Map{}
+	}
+	bps, entries, err := bg.detect(nil, &sync.WaitGroup{}, c)
+	if err == errBuildpack {
+		err = NewLifecycleError(err, ErrTypeBuildpack)
+	} else if err == errFailedDetection {
+		err = NewLifecycleError(err, ErrTypeFailedDetection)
+	}
+	for i := range entries {
+		for j := range entries[i].Requires {
+			entries[i].Requires[j].convertVersionToMetadata()
+		}
+	}
+	return BuildpackGroup{Group: bps}, BuildPlan{Entries: entries}, err
+}
+
+func (bg BuildpackGroup) detect(done []GroupBuildpack, wg *sync.WaitGroup, c *DetectConfig) ([]GroupBuildpack, []BuildPlanEntry, error) {
+	for i, bp := range bg.Group {
+		key := bp.String()
+		if hasID(done, bp.ID) {
+			continue
+		}
+		info, err := bp.Lookup(c.BuildpacksDir)
+		if err != nil {
+			return nil, nil, err
+		}
+		bp.API = info.API
+		bp.Homepage = info.Buildpack.Homepage
+		if info.Order != nil {
+			// TODO: double-check slice safety here
+			// FIXME: cyclical references lead to infinite recursion
+			return info.Order.detect(done, bg.Group[i+1:], bp.Optional, wg, c)
+		}
+		done = append(done, bp)
+		wg.Add(1)
+		go func(key string, info *BuildpackTOML) {
+			if _, ok := c.runs.Load(key); !ok {
+				c.runs.Store(key, info.Detect(c))
+			}
+			wg.Done()
+		}(key, info)
+	}
+
+	wg.Wait()
+
+	return c.process(done)
+}
+
+func (bg BuildpackGroup) append(group ...BuildpackGroup) BuildpackGroup {
+	for _, g := range group {
+		bg.Group = append(bg.Group, g.Group...)
+	}
+	return bg
+}
+
+type BuildpackOrder []BuildpackGroup
+
+func (bo BuildpackOrder) Detect(c *DetectConfig) (BuildpackGroup, BuildPlan, error) {
+	if c.runs == nil {
+		c.runs = &sync.Map{}
+	}
+	bps, entries, err := bo.detect(nil, nil, false, &sync.WaitGroup{}, c)
+	if err == errBuildpack {
+		err = NewLifecycleError(err, ErrTypeBuildpack)
+	} else if err == errFailedDetection {
+		err = NewLifecycleError(err, ErrTypeFailedDetection)
+	}
+	for i := range entries {
+		for j := range entries[i].Requires {
+			entries[i].Requires[j].convertVersionToMetadata()
+		}
+	}
+	return BuildpackGroup{Group: bps}, BuildPlan{Entries: entries}, err
+}
+
+func (bo BuildpackOrder) detect(done, next []GroupBuildpack, optional bool, wg *sync.WaitGroup, c *DetectConfig) ([]GroupBuildpack, []BuildPlanEntry, error) {
+	ngroup := BuildpackGroup{Group: next}
+	buildpackErr := false
+	for _, group := range bo {
+		// FIXME: double-check slice safety here
+		found, plan, err := group.append(ngroup).detect(done, wg, c)
+		if err == errBuildpack {
+			buildpackErr = true
+		}
+		if err == errFailedDetection || err == errBuildpack {
+			wg = &sync.WaitGroup{}
+			continue
+		}
+		return found, plan, err
+	}
+	if optional {
+		return ngroup.detect(done, wg, c)
+	}
+
+	if buildpackErr {
+		return nil, nil, errBuildpack
+	}
+	return nil, nil, errFailedDetection
+}
+
+func hasID(bps []GroupBuildpack, id string) bool {
+	for _, bp := range bps {
+		if bp.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+type DetectRun struct {
+	planSections
+	Or     planSectionsList `toml:"or"`
+	Output []byte           `toml:"-"`
+	Code   int              `toml:"-"`
+	Err    error            `toml:"-"`
+}
+
+type planSections struct {
+	Requires []Require `toml:"requires"`
+	Provides []Provide `toml:"provides"`
+}
+
+func (p *planSections) hasInconsistentVersions() bool {
+	for _, req := range p.Requires {
+		if req.hasInconsistentVersions() {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *planSections) hasDoublySpecifiedVersions() bool {
+	for _, req := range p.Requires {
+		if req.hasDoublySpecifiedVersions() {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *planSections) hasTopLevelVersions() bool {
+	for _, req := range p.Requires {
+		if req.hasTopLevelVersions() {
+			return true
+		}
+	}
+	return false
+}
+
+type planSectionsList []planSections
+
+func (p *planSectionsList) hasInconsistentVersions() bool {
+	for _, planSection := range *p {
+		if planSection.hasInconsistentVersions() {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *planSectionsList) hasDoublySpecifiedVersions() bool {
+	for _, planSection := range *p {
+		if planSection.hasDoublySpecifiedVersions() {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *planSectionsList) hasTopLevelVersions() bool {
+	for _, planSection := range *p {
+		if planSection.hasTopLevelVersions() {
+			return true
+		}
+	}
+	return false
+}
+
+>>>>>>> Stashed changes
 type detectResult struct {
 	buildpack.GroupBuildpack
 	buildpack.DetectRun

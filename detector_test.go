@@ -1,6 +1,13 @@
 package lifecycle_test
 
 import (
+<<<<<<< Updated upstream
+=======
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path/filepath"
+>>>>>>> Stashed changes
 	"reflect"
 	"strings"
 	"sync"
@@ -27,7 +34,14 @@ func TestDetector(t *testing.T) {
 	spec.Run(t, "Detector", testDetector, spec.Report(report.Terminal{}))
 }
 
+type cmdFactory struct {}
+
+func (c *cmdFactory) NewCommand(cmd string, args ...string) (*exec.Command, error) {
+	return exec.Command(cmd, args...), nil
+}
+
 func testDetector(t *testing.T, when spec.G, it spec.S) {
+<<<<<<< Updated upstream
 	when("#Detect", func() {
 		var (
 			mockCtrl       *gomock.Controller
@@ -41,6 +55,38 @@ func testDetector(t *testing.T, when spec.G, it spec.S) {
 			detector = &lifecycle.Detector{
 				Runs: &sync.Map{},
 			}
+=======
+	var (
+		config      *lifecycle.DetectConfig
+		platformDir string
+		tmpDir      string
+		logHandler  *memory.Handler
+	)
+
+	it.Before(func() {
+		var err error
+		tmpDir, err = ioutil.TempDir("", "lifecycle")
+		if err != nil {
+			t.Fatalf("Error: %s\n", err)
+		}
+		platformDir = filepath.Join(tmpDir, "platform")
+		appDir := filepath.Join(tmpDir, "app")
+		h.Mkdir(t, appDir, filepath.Join(platformDir, "env"))
+		fakeCommandFactory :=
+		buildpacksDir := filepath.Join("testdata", "by-id")
+
+		logHandler = memory.New()
+		config = &lifecycle.DetectConfig{
+			FullEnv:        append(os.Environ(), "ENV_TYPE=full"),
+			ClearEnv:       append(os.Environ(), "ENV_TYPE=clear"),
+			AppDir:         appDir,
+			PlatformDir:    platformDir,
+			BuildpacksDir:  buildpacksDir,
+			Logger:         &log.Logger{Handler: logHandler},
+			CommandFactory: fakeCommandFactory,
+		}
+	})
+>>>>>>> Stashed changes
 
 			resolver = testmock.NewMockResolver(mockCtrl)
 			detector.Resolver = resolver

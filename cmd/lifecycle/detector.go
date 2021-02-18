@@ -88,6 +88,7 @@ func (da detectArgs) detect() (buildpack.Group, platform.BuildPlan, error) {
 	if err != nil {
 		return buildpack.Group{}, platform.BuildPlan{}, cmd.FailErr(err, "read full env")
 	}
+<<<<<<< Updated upstream
 	detector, err := lifecycle.NewDetector(
 		buildpack.DetectConfig{
 			FullEnv:     fullEnv,
@@ -102,6 +103,17 @@ func (da detectArgs) detect() (buildpack.Group, platform.BuildPlan, error) {
 		return buildpack.Group{}, platform.BuildPlan{}, cmd.FailErr(err, "initialize detector")
 	}
 	group, plan, err := detector.Detect(order)
+=======
+	group, plan, err := order.Detect(&lifecycle.DetectConfig{
+		FullEnv:        fullEnv,
+		ClearEnv:       envv.List(),
+		AppDir:         da.appDir,
+		PlatformDir:    da.platformDir,
+		BuildpacksDir:  da.buildpacksDir,
+		Logger:         cmd.DefaultLogger,
+		CommandFactory: priv.NewCommandFactory(),
+	})
+>>>>>>> Stashed changes
 	if err != nil {
 		switch err := err.(type) {
 		case *buildpack.Error:

@@ -32,6 +32,16 @@ csetresgid(gid_t rgid, gid_t egid, gid_t sgid) {
 */
 import "C"
 
+type commandFactory struct {}
+
+func NewCommandFactory() (*commandFactory) {
+	return &commandFactory{}
+}
+
+func (f *commandFactory) NewCommand(cmd string, args ...string) (*exec.Cmd, error) {
+	return exec.Command(cmd, args...)
+}
+
 // EnsureOwner recursively chowns a dir if it isn't writable
 func EnsureOwner(uid, gid int, paths ...string) error {
 	for _, p := range paths {
@@ -144,3 +154,4 @@ func SetEnvironmentForUser(uid int) error {
 	}
 	return nil
 }
+

@@ -29,8 +29,8 @@ func TestLauncher(t *testing.T) {
 		launchDockerContext = filepath.Join("testdata", "launcher", "windows")
 		launcherBinaryDir = filepath.Join("testdata", "launcher", "windows", "container", "cnb", "lifecycle")
 	} else {
-		launchDockerContext = filepath.Join("testdata", "launcher", "posix")
-		launcherBinaryDir = filepath.Join("testdata", "launcher", "posix", "container", "cnb", "lifecycle")
+		launchDockerContext = filepath.Join("testdata", "launcher", "linux")
+		launcherBinaryDir = filepath.Join("testdata", "launcher", "linux", "container", "cnb", "lifecycle")
 	}
 
 	h.MakeAndCopyLauncher(t, daemonOS, launcherBinaryDir)

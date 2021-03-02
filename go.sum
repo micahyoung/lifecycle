@@ -217,8 +217,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2 h1:g+4J5sZg6osfvEfkRZxJ1em0VT95/UOZgi/l7zi1/oE=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2/go.mod h1:eD9eIE7cdwcMi9rYluz88Jz2VyhSmden33/aXg4oVIY=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
-github.com/micahyoung/buildpacks-imgutil v0.0.0-20210226115357-f4113f07ae14 h1:mkMtmBvNgGaacrAiCXFsX3vsMnUAzXLWIKM/qlL03+w=
-github.com/micahyoung/buildpacks-imgutil v0.0.0-20210226115357-f4113f07ae14/go.mod h1:JiWXkmkaiXrr5nq77JUtu7ys/5OAznS4VI7TwKthP7s=
+github.com/micahyoung/buildpacks-imgutil v0.0.0-20210302164249-12b254110b49 h1:Z07RE0KhCCvx0qYbcY5tesw+e77n1u9D4Y93KO5kVmQ=
+github.com/micahyoung/buildpacks-imgutil v0.0.0-20210302164249-12b254110b49/go.mod h1:JiWXkmkaiXrr5nq77JUtu7ys/5OAznS4VI7TwKthP7s=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

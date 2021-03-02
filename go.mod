@@ -1,6 +1,6 @@
 module github.com/buildpacks/lifecycle
 
-replace github.com/buildpacks/imgutil => github.com/micahyoung/buildpacks-imgutil v0.0.0-20210226115357-f4113f07ae14
+replace github.com/buildpacks/imgutil => github.com/micahyoung/buildpacks-imgutil v0.0.0-20210302164249-12b254110b49
 
 require (
 	github.com/BurntSushi/toml v0.3.1

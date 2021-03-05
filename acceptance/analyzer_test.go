@@ -171,8 +171,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 			h.DockerRunAndCopy(t,
 				containerName,
 				copyDir,
-				analyzeImage,
 				vh.CtrPath("/some-dir/some-analyzed.toml"),
+				analyzeImage,
 				h.WithArgs(
 					vh.CtrPath(analyzerPath),
 					"-analyzed", vh.CtrPath("/some-dir/some-analyzed.toml"),
@@ -189,8 +189,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 			h.DockerRunAndCopy(t,
 				containerName,
 				copyDir,
-				analyzeImage,
 				vh.CtrPath("/layers/analyzed.toml"),
+				analyzeImage,
 				h.WithFlags(vh.DockerSocketMount()...),
 				h.WithArgs(vh.CtrPath(analyzerPath), "-daemon", "some-image"),
 			)
@@ -224,8 +224,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 				output := h.DockerRunAndCopy(t,
 					containerName,
 					copyDir,
-					analyzeImage,
 					vh.CtrPath("/layers"),
+					analyzeImage,
 					h.WithFlags(vh.DockerSocketMount()...),
 					h.WithArgs(
 						vh.CtrPath(analyzerPath),
@@ -242,8 +242,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 					output := h.DockerRunAndCopy(t,
 						containerName,
 						copyDir,
-						analyzeImage,
 						vh.CtrPath("/layers"),
+						analyzeImage,
 						h.WithFlags(vh.DockerSocketMount()...),
 						h.WithArgs(
 							vh.CtrPath(analyzerPath),
@@ -287,8 +287,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						h.DockerRunAndCopy(t,
 							containerName,
 							copyDir,
-							analyzeImage,
 							vh.CtrPath("/layers"),
+							analyzeImage,
 							h.WithFlags(vh.DockerSocketMount()...),
 							h.WithArgs(
 								vh.CtrPath(analyzerPath),
@@ -327,8 +327,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 								output := h.DockerRunAndCopy(t,
 									containerName,
 									copyDir,
-									analyzeImage,
 									"/layers",
+									analyzeImage,
 									h.WithFlags(append(
 										vh.DockerSocketMount(),
 										"--env", "CNB_REGISTRY_AUTH="+cacheAuthConfig,
@@ -351,8 +351,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 								output := h.DockerRunAndCopy(t,
 									containerName,
 									copyDir,
-									analyzeImage,
 									vh.CtrPath("/layers"),
+									analyzeImage,
 									h.WithFlags(
 										"--env", "DOCKER_CONFIG=/docker-config",
 										"--network", registryNetwork,
@@ -390,8 +390,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 							output := h.DockerRunAndCopy(t,
 								containerName,
 								copyDir,
-								analyzeImage,
 								vh.CtrPath("/layers"),
+								analyzeImage,
 								h.WithFlags("--network", registryNetwork),
 								h.WithArgs(
 									vh.CtrPath(analyzerPath),
@@ -484,8 +484,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 			h.DockerRunAndCopy(t,
 				containerName,
 				copyDir,
-				analyzeImage,
 				vh.CtrPath("/layers/analyzed.toml"),
+				analyzeImage,
 				h.WithArgs(vh.CtrPath(analyzerPath), "some-image"),
 			)
 
@@ -514,8 +514,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						output := h.DockerRunAndCopy(t,
 							containerName,
 							copyDir,
-							analyzeImage,
 							vh.CtrPath("/layers"),
+							analyzeImage,
 							h.WithFlags(
 								"--env", "CNB_REGISTRY_AUTH="+appAuthConfig,
 								"--network", registryNetwork,
@@ -535,8 +535,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						output := h.DockerRunAndCopy(t,
 							containerName,
 							copyDir,
-							analyzeImage,
 							vh.CtrPath("/layers"),
+							analyzeImage,
 							h.WithFlags(
 								"--env", "DOCKER_CONFIG=/docker-config",
 								"--network", registryNetwork,
@@ -556,8 +556,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						output := h.DockerRunAndCopy(t,
 							containerName,
 							copyDir,
-							analyzeImage,
 							vh.CtrPath("/layers"),
+							analyzeImage,
 							h.WithFlags(
 								"--network", registryNetwork,
 								"--env", "CNB_REGISTRY_AUTH="+appAuthConfig,
@@ -595,8 +595,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 					output := h.DockerRunAndCopy(t,
 						containerName,
 						copyDir,
-						analyzeImage,
 						vh.CtrPath("/layers"),
+						analyzeImage,
 						h.WithFlags("--network", registryNetwork),
 						h.WithArgs(
 							vh.CtrPath(analyzerPath),
@@ -612,8 +612,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						output := h.DockerRunAndCopy(t,
 							containerName,
 							copyDir,
-							analyzeImage,
 							vh.CtrPath("/layers"),
+							analyzeImage,
 							h.WithFlags("--network", registryNetwork),
 							h.WithArgs(
 								vh.CtrPath(analyzerPath),
@@ -654,8 +654,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 							output := h.DockerRunAndCopy(t,
 								containerName,
 								copyDir,
-								analyzeImage,
 								vh.CtrPath("/layers"),
+								analyzeImage,
 								h.WithFlags(
 									"--env", "CNB_REGISTRY_AUTH="+cacheAuthConfig,
 									"--network", registryNetwork,
@@ -676,8 +676,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 							output := h.DockerRunAndCopy(t,
 								containerName,
 								copyDir,
-								analyzeImage,
 								vh.CtrPath("/layers"),
+								analyzeImage,
 								h.WithFlags(
 									"--env", "DOCKER_CONFIG=/docker-config",
 									"--network", registryNetwork,
@@ -715,8 +715,8 @@ func testAnalyzer(t *testing.T, when spec.G, it spec.S) {
 						output := h.DockerRunAndCopy(t,
 							containerName,
 							copyDir,
-							analyzeImage,
 							vh.CtrPath("/layers"),
+							analyzeImage,
 							h.WithFlags("--network", registryNetwork),
 							h.WithArgs(
 								vh.CtrPath(analyzerPath),

@@ -49,16 +49,17 @@ func DockerRun(t *testing.T, image string, ops ...DockerCmdOp) string {
 	return Run(t, exec.Command("docker", append([]string{"run", "--rm"}, args...)...))
 }
 
-//TODO swap image and path
-func DockerRunAndCopy(t *testing.T, containerName, copyDir, image, path string, ops ...DockerCmdOp) string {
+//DockerRunAndCopy runs a container and once stopped, outputCtrPath is copied to outputDir
+func DockerRunAndCopy(t *testing.T, containerName, outputDir, outputCtrPath, image string, ops ...DockerCmdOp) string {
 	ops = append(ops, WithFlags("--name", containerName))
 	args := formatArgs([]string{image}, ops...)
 
 	output := Run(t, exec.Command("docker", append([]string{"run"}, args...)...))
-	Run(t, exec.Command("docker", "cp", containerName+":"+path, copyDir))
+	Run(t, exec.Command("docker", "cp", containerName+":"+outputCtrPath, outputDir))
 	return output
 }
 
+//DockerSeedRunAndCopy copies srcDir to container's srcCtrPath before container is started. Once stopped, outputCtrPath is copied to outputDir
 func DockerSeedRunAndCopy(t *testing.T, containerName, srcDir, srcCtrPath, outputDir, outputCtrPath, image string, ops ...DockerCmdOp) string {
 	ops = append(ops, WithFlags("--name", containerName))
 	args := formatArgs([]string{image}, ops...)
@@ -108,6 +109,7 @@ func PushImage(dockerCli dockercli.CommonAPIClient, ref string, auth string) err
 	return nil
 }
 
+//SeedDockerVolume only works with Linux daemons as Windows only mounts volumes for started containers
 func SeedDockerVolume(t *testing.T, srcPath string) string {
 	volumeName := "test-volume-" + RandString(10)
 	containerName := "test-volume-helper-" + RandString(10)

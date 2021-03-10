@@ -1,6 +1,6 @@
 module github.com/buildpacks/lifecycle
 
-replace github.com/buildpacks/imgutil => github.com/micahyoung/buildpacks-imgutil v0.0.0-20210307160432-37b9088f229a
+replace github.com/buildpacks/imgutil => github.com/micahyoung/buildpacks-imgutil v0.0.0-20210310131234-492eae441d3d
 
 require (
 	github.com/BurntSushi/toml v0.3.1
@@ -11,7 +11,7 @@ require (
 	github.com/docker/cli v0.0.0-20200312141509-ef2f64abbd37 // indirect
 	github.com/docker/docker v1.4.2-0.20190924003213-a8608b5b67c7
 	github.com/golang/mock v1.5.0
-	github.com/google/go-cmp v0.5.4
+	github.com/google/go-cmp v0.5.5
 	github.com/google/go-containerregistry v0.4.1
 	github.com/heroku/color v0.0.6
 	github.com/pkg/errors v0.9.1
